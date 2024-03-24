@@ -76,8 +76,14 @@ async def upload_csv_to_database(file, db: Session):
 # Backup selected table  
 # Load Avro schema from the selected model
 def load_avro_schema(table_name):
-    schema_dict: dict = _schemas.Employees.avro_schema()
+    if table_name == 'hired_employees':
+        schema_dict: dict = _schemas.Employees.avro_schema()
+    elif table_name == 'jobs':
+        schema_dict: dict = _schemas.Job.avro_schema()
+    elif table_name == 'departments':
+        schema_dict: dict = _schemas.Department.avro_schema()
     return avro.schema.parse(json.dumps(schema_dict))
+
 # Backup
 def backup_table_to_avro(db: Session, table_name: str):
     # Check if the table exists
