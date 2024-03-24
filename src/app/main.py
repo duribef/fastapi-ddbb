@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, UploadFile, File
 import app.services as _services
 import app.schemas as _schemas
 from typing import List
@@ -19,3 +19,10 @@ async def create_employees(
     if len(employees) > 1000:
         raise HTTPException(status_code=400, detail="Maximum batch size is 1000")
     return await _services.create_employees(employees=employees, db=db)
+
+# Move historical data to hired_employees table
+@app.post("/api/employees/batch")
+async def upload_file(
+    file: UploadFile = File(...), 
+    db: Session = Depends(_services.get_db)):
+    return _services.upload_csv_to_database(file=file, db=db)

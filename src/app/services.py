@@ -3,6 +3,10 @@ from typing import List
 import app.schemas as _schemas
 import app.models as _models
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
+import pandas as pd
+from fastapi.exceptions import HTTPException
+from sqlalchemy import text
 
 # Create tables
 def _add_tables():
@@ -29,3 +33,23 @@ async def create_employees(
         db.refresh(employee)
     
     return [_schemas.Employees.model_validate(employee, from_attributes=True) for employee in employee_objects]
+
+def upload_csv_to_database(file, db: Session):
+    try:
+        # Read CSV data into a DataFrame
+        df = pd.read_csv(file.file, header=None)
+        column_names = ['id', 'name', 'datetime', 'department_id', 'job_id']
+        df.columns = column_names
+        
+        db.begin()
+        # Upload data into the database
+        df.to_sql("hired_employees", db.get_bind(), if_exists="append", index=False)
+        # Commit the transaction
+        db.execute(text(f"SELECT setval('hired_employees_id_seq', max(id)) FROM hired_employees;"))
+        db.commit()
+        return {"message": "Data uploaded successfully"}
+        
+    
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="IntegrityError: Duplicate entry")
