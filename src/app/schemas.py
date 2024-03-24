@@ -20,34 +20,34 @@ class Employees(EmployeesBase):
     class Config:
         orm_mode = True
 
-class DropdownOptions(str, Enum):
-    hired_employees = "hired_employees"
-    jobs = "jobs"
-    department = "departments"
-
 class JobBase(AvroBase):
     __tablename__ = 'jobs'
-    id: int
     job: Optional[Annotated[str, Field(strict=False)]]
 
 class JobCreate(JobBase):
     pass
 
 class Job(JobBase):
+    id: int
     class Config:
         orm_mode = True
 
 class DepartmentBase(AvroBase):
     __tablename__ = 'department'
-    id: int
     department: Optional[Annotated[str, Field(strict=False)]]
 
 class DepartmentCreate(DepartmentBase):
     pass
 
 class Department(DepartmentBase):
+    id: int
     class Config:
         orm_mode = True
+
+class DropdownOptions(str, Enum):
+    hired_employees = "hired_employees"
+    jobs = "jobs"
+    department = "departments"
 
 class DropdownOptions(str, Enum):
     hired_employees = "hired_employees"

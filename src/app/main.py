@@ -11,16 +11,6 @@ app = FastAPI()
 # Create tables
 _services._add_tables()
 
-# Add new data to hired_employees table
-@app.post("/api/employees/", response_model=List[_schemas.Employees])
-async def create_employees(
-    employees: List[_schemas.EmployeesCreate],
-    db: Session = Depends(_services.get_db),
-):
-    if len(employees) > 1000:
-        raise HTTPException(status_code=400, detail="Maximum batch size is 1000")
-    return await _services.create_employees(employees=employees, db=db)
-
 # Move historical data to hired_employees table
 @app.post("/api/batch")
 async def upload_file(
@@ -47,3 +37,23 @@ async def restore_table(
     db: Session = Depends(_services.get_db)):
     _services.restore_table(db, table_name.value)
     return {"message": "Avro data imported successfully"}
+
+# Add new data to hired_employees table
+@app.post("/api/employees/", response_model=List[_schemas.Employees])
+async def create_employees(
+    employees: List[_schemas.EmployeesCreate],
+    db: Session = Depends(_services.get_db),
+):
+    if len(employees) > 1000:
+        raise HTTPException(status_code=400, detail="Maximum batch size is 1000")
+    return await _services.create_employees(employees=employees, db=db)
+
+# Add new data to department table
+@app.post("/api/department/", response_model=List[_schemas.Department])
+async def create_department(
+    departments: List[_schemas.DepartmentCreate],
+    db: Session = Depends(_services.get_db),
+):
+    if len(departments) > 1000:
+        raise HTTPException(status_code=400, detail="Maximum batch size is 1000")
+    return await _services.create_departments(departments=departments, db=db)

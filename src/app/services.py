@@ -41,7 +41,21 @@ async def create_employees(
     
     return [_schemas.Employees.model_validate(employee, from_attributes=True) for employee in employee_objects]
 
-# Batch upload employees
+# Add new departments
+async def create_departments(
+    departments: List[_schemas.DepartmentCreate], db: Session
+) -> _schemas.Department:
+    departments_objects = [_models.Departments(**department.model_dump()) for department in departments]
+    db.add_all(departments_objects)
+    db.commit()    
+    
+    # Refresh each individual object to update its state from the database
+    for department in departments_objects:
+        db.refresh(department)
+    
+    return [_schemas.Department.model_validate(department, from_attributes=True) for department in departments_objects]
+
+# Batch upload
 async def upload_csv_to_database(file, db: Session):
     table_name = file.filename.replace('.csv','')
     try:
@@ -54,7 +68,6 @@ async def upload_csv_to_database(file, db: Session):
             model = _models.Departments()
 
         column_names = [column.name for column in model.__table__.columns]
-        #column_names = ['id', 'name', 'datetime', 'department_id', 'job_id']
         
         # Read CSV data into a DataFrame
         df = pd.read_csv(file.file, header=None)

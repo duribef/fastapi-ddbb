@@ -11,10 +11,10 @@ class Employees(_database.Base):
 
 class Departments(_database.Base):
     __tablename__ = "departments"
-    id = _sql.Column(_sql.Integer, primary_key=True, index=True, doc='Id of the department')
+    id = _sql.Column(_sql.Integer, primary_key=True, index=True, autoincrement=True, nullable=False, doc='Id of the department')
     department = _sql.Column(_sql.String, index=False, doc='Name of the department')
 
 class Jobs(_database.Base):
     __tablename__ = "jobs"
-    id = _sql.Column(_sql.Integer, primary_key=True, index=True, doc='Id of the job')
+    id = _sql.Column(_sql.Integer, primary_key=True, index=True, autoincrement=True, nullable=False, doc='Id of the job')
     job = _sql.Column(_sql.String, index=False, doc='Name of the job')
