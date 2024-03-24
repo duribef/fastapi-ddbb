@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Depends, UploadFile, File
+from fastapi import FastAPI, Depends, UploadFile, File, Query
 import app.services as _services
 import app.schemas as _schemas
 from typing import List
 from sqlalchemy.orm import Session
 from fastapi.exceptions import HTTPException
+import asyncio
 
 app = FastAPI()
 
@@ -25,4 +26,17 @@ async def create_employees(
 async def upload_file(
     file: UploadFile = File(...), 
     db: Session = Depends(_services.get_db)):
-    return _services.upload_csv_to_database(file=file, db=db)
+    return await _services.upload_csv_to_database(file=file, db=db)
+
+# Back up table to AVRO
+@app.post("/api/create_backup", status_code=200)
+async def backup_table(
+    table_name: _schemas.DropdownOptions = Query(..., description="Select a table to backup"),
+    db: Session = Depends(_services.get_db),
+):
+    try:
+        backup_file_path = await asyncio.to_thread(_services.backup_table_to_avro, db=db, table_name=table_name.value)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    
+    return {"message": f"Backup of table {table_name.value} stored in {backup_file_path}"}

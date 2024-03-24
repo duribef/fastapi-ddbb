@@ -7,6 +7,11 @@ from sqlalchemy.exc import IntegrityError
 import pandas as pd
 from fastapi.exceptions import HTTPException
 from sqlalchemy import text
+import avro.schema
+import app.utils as _utils
+from avro.datafile import DataFileWriter
+import json
+from avro.io import DatumWriter
 
 # Create tables
 def _add_tables():
@@ -20,7 +25,7 @@ def get_db():
     finally:
         db.close()
 
-# Add Data Logic
+# Add new employees
 async def create_employees(
     employees: List[_schemas.EmployeesCreate], db: Session
 ) -> _schemas.Employees:
@@ -34,7 +39,8 @@ async def create_employees(
     
     return [_schemas.Employees.model_validate(employee, from_attributes=True) for employee in employee_objects]
 
-def upload_csv_to_database(file, db: Session):
+# Batch upload employees
+async def upload_csv_to_database(file, db: Session):
     try:
         # Read CSV data into a DataFrame
         df = pd.read_csv(file.file, header=None)
@@ -53,3 +59,47 @@ def upload_csv_to_database(file, db: Session):
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=400, detail="IntegrityError: Duplicate entry")
+
+# Backup selected table  
+# Load Avro schema from the selected model
+def load_avro_schema(table_name):
+    schema_dict: dict = _schemas.Employees.avro_schema()
+    return avro.schema.parse(json.dumps(schema_dict))
+# Backup
+def backup_table_to_avro(db: Session, table_name: str):
+    # Check if the table exists
+    if not _utils.table_exists(db, table_name):
+        raise ValueError("Table not found")
+    
+    # Parse the Avro schema
+    avro_schema = load_avro_schema(table_name)
+
+    # Query the data from PostgreSQL
+    sql_query = text(f"SELECT * FROM {table_name};")
+    data = db.execute(sql_query).fetchall()
+
+    # Convert the retrieved data to a list of dictionaries
+    data_dicts = []
+    for row in data:
+        row_dict = {}
+        for column, value in row._mapping.items():
+            # Replace NULL values with None
+            if value is None:
+                value = None
+            row_dict[column] = value
+        data_dicts.append(row_dict)
+
+    # Generate a datetime timestamp 
+    backup_file_name = f"{table_name}_backup.avro"
+    
+    # Write Avro data to a file
+    with open(backup_file_name, 'wb') as f:
+        try:
+            writer = DataFileWriter(f, DatumWriter(), avro_schema)
+            for record in data_dicts:
+                writer.append(record)
+        except Exception as e:
+            print(f"Error writing Avro data to file: {e}")
+        finally:
+            writer.close()
+    return backup_file_name
