@@ -43,19 +43,30 @@ async def create_employees(
 
 # Batch upload employees
 async def upload_csv_to_database(file, db: Session):
+    table_name = file.filename.replace('.csv','')
     try:
+        # Get column names
+        if table_name == 'hired_employees':
+            model = _models.Employees()
+        elif table_name == 'jobs':
+            model = _models.Jobs()
+        elif table_name == 'departments':
+            model = _models.Departments()
+
+        column_names = [column.name for column in model.__table__.columns]
+        #column_names = ['id', 'name', 'datetime', 'department_id', 'job_id']
+        
         # Read CSV data into a DataFrame
         df = pd.read_csv(file.file, header=None)
-        column_names = ['id', 'name', 'datetime', 'department_id', 'job_id']
         df.columns = column_names
         
         db.begin()
         # Upload data into the database
-        df.to_sql("hired_employees", db.get_bind(), if_exists="append", index=False)
+        df.to_sql(table_name, db.get_bind(), if_exists="append", index=False)
         # Commit the transaction
-        db.execute(text(f"SELECT setval('hired_employees_id_seq', max(id)) FROM hired_employees;"))
+        db.execute(text(f"SELECT setval('{table_name}_id_seq', max(id)) FROM {table_name};"))
         db.commit()
-        return {"message": "Data uploaded successfully"}
+        return {"message": f"Table {table_name} uploaded successfully"}
         
     
     except IntegrityError:

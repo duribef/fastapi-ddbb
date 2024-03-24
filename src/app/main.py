@@ -22,7 +22,7 @@ async def create_employees(
     return await _services.create_employees(employees=employees, db=db)
 
 # Move historical data to hired_employees table
-@app.post("/api/employees/batch")
+@app.post("/api/batch")
 async def upload_file(
     file: UploadFile = File(...), 
     db: Session = Depends(_services.get_db)):
