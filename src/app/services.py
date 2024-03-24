@@ -1,4 +1,4 @@
-import src.app.database as _database
+import app.database as _database
 
 # Create tables
 def _add_tables():

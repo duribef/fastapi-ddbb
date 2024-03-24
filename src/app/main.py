@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-import src.app.services as _services
+import app.services as _services
 
 app = FastAPI()
 
