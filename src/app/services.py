@@ -129,7 +129,13 @@ def restore_table(db: Session, table_name: str):
     # Iterate through the Avro records and add them to the database
     for avro_record in avro_reader:
         # Create an instance of the AvroData class for each record
-        record = _models.Employees(**avro_record)
+        if table_name == 'hired_employees':
+            record = _models.Employees(**avro_record)
+        elif table_name == 'jobs':
+            record = _models.Jobs(**avro_record)
+        elif table_name == 'departments':
+            record = _models.Departments(**avro_record)
+
         # Add the record to the session
         db.add(record)
         # Commit the session to save the changes
