@@ -12,6 +12,8 @@ import app.utils as _utils
 from avro.datafile import DataFileWriter
 import json
 from avro.io import DatumWriter
+from avro.datafile import DataFileReader
+from avro.io import DatumReader
 
 # Create tables
 def _add_tables():
@@ -103,3 +105,15 @@ def backup_table_to_avro(db: Session, table_name: str):
         finally:
             writer.close()
     return backup_file_name
+
+def restore_table(db: Session, table_name: str): 
+    avro_file_path= f"{table_name}_backup.avro"
+    avro_reader  = DataFileReader(open(avro_file_path, "rb"), DatumReader())
+    # Iterate through the Avro records and add them to the database
+    for avro_record in avro_reader:
+        # Create an instance of the AvroData class for each record
+        record = _models.Employees(**avro_record)
+        # Add the record to the session
+        db.add(record)
+        # Commit the session to save the changes
+        db.commit()

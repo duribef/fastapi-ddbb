@@ -40,3 +40,10 @@ async def backup_table(
         raise HTTPException(status_code=404, detail=str(e))
     
     return {"message": f"Backup of table {table_name.value} stored in {backup_file_path}"}
+
+@app.post("/api/restore_backup")
+async def restore_table(
+    table_name: _schemas.DropdownOptions = Query(..., description="Select a table to restore"),
+    db: Session = Depends(_services.get_db)):
+    _services.restore_table(db, table_name.value)
+    return {"message": "Avro data imported successfully"}
