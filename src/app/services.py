@@ -55,6 +55,20 @@ async def create_departments(
     
     return [_schemas.Department.model_validate(department, from_attributes=True) for department in departments_objects]
 
+# Add new jobs
+async def create_jobs(
+    jobs: List[_schemas.JobCreate], db: Session
+) -> _schemas.Department:
+    jobs_objects = [_models.Jobs(**job.model_dump()) for job in jobs]
+    db.add_all(jobs_objects)
+    db.commit()    
+    
+    # Refresh each individual object to update its state from the database
+    for job in jobs_objects:
+        db.refresh(job)
+    
+    return [_schemas.Job.model_validate(job, from_attributes=True) for job in jobs_objects]
+
 # Batch upload
 async def upload_csv_to_database(file, db: Session):
     table_name = file.filename.replace('.csv','')

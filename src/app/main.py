@@ -57,3 +57,13 @@ async def create_department(
     if len(departments) > 1000:
         raise HTTPException(status_code=400, detail="Maximum batch size is 1000")
     return await _services.create_departments(departments=departments, db=db)
+
+# Add new data to jobs table
+@app.post("/api/jobs/", response_model=List[_schemas.Job])
+async def create_jobs(
+    jobs: List[_schemas.JobCreate],
+    db: Session = Depends(_services.get_db),
+):
+    if len(jobs) > 1000:
+        raise HTTPException(status_code=400, detail="Maximum batch size is 1000")
+    return await _services.create_jobs(jobs=jobs, db=db)
