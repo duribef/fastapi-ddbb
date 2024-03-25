@@ -1,0 +1,41 @@
+name: Build and Push to Artifact Registry
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  IMAGE_NAME: fastapi
+  PROJECT_ID: fastapi-ddbb
+  REGION: us-central1
+  GAR_LOCATION: us-central1-docker.pkg.dev/fastapi-ddbb/fastapi-repo
+
+jobs:
+  build-push-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v3"
+
+      - id: "auth"
+        uses: "google-github-actions/auth@v1"
+        with:
+          credentials_json: "${{ secrets.SERVICE_ACCOUNT_KEY }}"
+
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v1"
+
+      - name: "Use gcloud CLI"
+        run: "gcloud info"
+
+      - name: "Docker auth"
+        run: |-
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build image
+        run: docker build . --file src/Dockerfile --tag  ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }}
+
+      - name: Push image
+        run: docker push ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }}
