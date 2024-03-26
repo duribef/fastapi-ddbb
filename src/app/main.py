@@ -6,7 +6,17 @@ from sqlalchemy.orm import Session
 from fastapi.exceptions import HTTPException
 import asyncio
 
+from starlette.exceptions import HTTPException
+from fastapi.exceptions import RequestValidationError
+from app.logging.exception_handlers import request_validation_exception_handler, http_exception_handler, unhandled_exception_handler
+from app.logging.middleware import log_request_middleware
+
 app = FastAPI()
+
+app.middleware("http")(log_request_middleware)
+app.add_exception_handler(RequestValidationError, request_validation_exception_handler)
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(Exception, unhandled_exception_handler)
 
 # Create tables
 _services._add_tables()
@@ -25,7 +35,7 @@ async def backup_table(
     db: Session = Depends(_services.get_db),
 ):
     try:
-        backup_file_path = await asyncio.to_thread(_services.backup_table_to_avro, db=db, table_name=table_name.value)
+        backup_file_path = _services.backup_table_to_avro(db=db, table_name=table_name.value)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     
