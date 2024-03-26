@@ -39,7 +39,7 @@ async def backup_table(
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     
-    return {"message": f"Backup of table {table_name.value} stored in {backup_file_path}"}
+    return {f"File {table_name.value} uploaded to Google Cloud Storage."}
 
 @app.post("/api/restore_backup")
 async def restore_table(
