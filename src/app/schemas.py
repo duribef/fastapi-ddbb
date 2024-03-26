@@ -4,10 +4,11 @@ from pydantic import Field
 from typing_extensions import Annotated
 from typing import Optional
 from pydantic_avro.base import AvroBase
+from datetime import datetime
 
 class EmployeesBase(AvroBase):
     name: Optional[Annotated[str, Field(strict=False)]]  
-    datetime: Optional[Annotated[str, Field(strict=False)]] 
+    datetime: Optional[Annotated[datetime, Field(strict=False)]] 
     department_id: Optional[Annotated[int, Field(strict=False, gt=0)]]
     job_id: Optional[Annotated[int, Field(strict=False, gt=0)]]
 
