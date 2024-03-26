@@ -146,6 +146,7 @@ def backup_table_to_avro(db: Session, table_name: str):
                 writer.append(record)
         except Exception as e:
             print(f"Error writing Avro data to file: {e}")
+            exit(1)
         finally:
             writer.close()
     return backup_file_name
