@@ -14,6 +14,7 @@ import json
 from avro.io import DatumWriter
 from avro.datafile import DataFileReader
 from avro.io import DatumReader
+import app.gcs as _gcs
 
 # Create tables
 def _add_tables():
@@ -149,10 +150,17 @@ def backup_table_to_avro(db: Session, table_name: str):
             exit(1)
         finally:
             writer.close()
+
+    # Upload the Avro file to GCS
+    _gcs.upload_to_gcs(backup_file_name, backup_file_name)
+    
     return backup_file_name
 
 def restore_table(db: Session, table_name: str): 
+ 
     avro_file_path= f"{table_name}_backup.avro"
+    _gcs.download_from_gcs(avro_file_path)
+    
     avro_reader  = DataFileReader(open(avro_file_path, "rb"), DatumReader())
     # Iterate through the Avro records and add them to the database
     for avro_record in avro_reader:
