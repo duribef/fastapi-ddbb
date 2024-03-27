@@ -16,6 +16,7 @@ from avro.datafile import DataFileReader
 from avro.io import DatumReader
 import app.gcs as _gcs
 import app.queries as _queries
+import plotly.graph_objs as go
 
 # Create tables
 def _add_tables():
@@ -183,7 +184,7 @@ def restore_table(db: Session, table_name: str):
         db.commit()
 
 async def metric1(db: Session):
-    sql_query = _queries.EMPLOYEES_REPORT_QUERY
+    sql_query = _queries.METRIC1_QUERY
     #result = await connection.fetch(query)
     data = db.execute(sql_query).fetchall()
     # Convert data into a list of dictionaries
