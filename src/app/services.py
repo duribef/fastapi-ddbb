@@ -15,7 +15,7 @@ from avro.io import DatumWriter
 from avro.datafile import DataFileReader
 from avro.io import DatumReader
 import app.gcs as _gcs
-from datetime import datetime
+import app.queries as _queries
 
 # Create tables
 def _add_tables():
@@ -181,3 +181,38 @@ def restore_table(db: Session, table_name: str):
         db.add(record)
         # Commit the session to save the changes
         db.commit()
+
+async def metric1(db: Session):
+    sql_query = _queries.EMPLOYEES_REPORT_QUERY
+    #result = await connection.fetch(query)
+    data = db.execute(sql_query).fetchall()
+    # Convert data into a list of dictionaries
+    report_list = []
+    for row in data:
+        row_dict = {
+            'department': row[0],
+            'job': row[1],
+            'Q1': row[2],
+            'Q2': row[3],
+            'Q3': row[4],
+            'Q4': row[5]
+        }
+        report_list.append(row_dict)
+
+    return report_list
+
+async def metric2(db: Session):
+    sql_query = _queries.METRIC2_QUERY
+    #result = await connection.fetch(query)
+    data = db.execute(sql_query).fetchall()
+    # Convert data into a list of dictionaries
+    report_list = []
+    for row in data:
+        row_dict = {
+            'id': row[0],
+            'department': row[1],
+            'hired': row[2]
+        }
+        report_list.append(row_dict)
+
+    return report_list
