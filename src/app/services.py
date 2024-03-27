@@ -16,7 +16,6 @@ from avro.datafile import DataFileReader
 from avro.io import DatumReader
 import app.gcs as _gcs
 import app.queries as _queries
-import plotly.graph_objs as go
 
 # Create tables
 def _add_tables():
