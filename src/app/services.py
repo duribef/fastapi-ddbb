@@ -15,6 +15,7 @@ from avro.io import DatumWriter
 from avro.datafile import DataFileReader
 from avro.io import DatumReader
 import app.gcs as _gcs
+from datetime import datetime
 
 # Create tables
 def _add_tables():
@@ -106,6 +107,11 @@ async def upload_csv_to_database(file, db: Session):
 def load_avro_schema(table_name):
     if table_name == 'hired_employees':
         schema_dict: dict = _schemas.Employees.avro_schema()
+        # Modify the schema to change the datetime field from datetime to str
+        for field in schema_dict['fields']:
+            if field['name'] == 'datetime':
+                field['type'] = ['null', 'string']
+
     elif table_name == 'jobs':
         schema_dict: dict = _schemas.Job.avro_schema()
     elif table_name == 'departments':
@@ -135,8 +141,7 @@ def backup_table_to_avro(db: Session, table_name: str):
                 value = None
             row_dict[column] = value
         data_dicts.append(row_dict)
-
-    # Generate a datetime timestamp 
+        
     backup_file_name = f"{table_name}_backup.avro"
     
     # Write Avro data to a file
