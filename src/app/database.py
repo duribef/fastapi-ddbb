@@ -3,10 +3,7 @@ import sqlalchemy as _sql
 import sqlalchemy.orm as _orm
 import sqlalchemy.ext.declarative as _declarative
 from google.cloud.sql.connector import Connector, IPTypes
-from dotenv import load_dotenv
 from sqlalchemy.engine import Engine
-
-load_dotenv()
 
 def init_connection_engine(connector: Connector) -> Engine:
     # if env var PRIVATE_IP is set to True, use private IP Cloud SQL connections

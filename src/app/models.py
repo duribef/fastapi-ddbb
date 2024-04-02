@@ -1,5 +1,6 @@
 import sqlalchemy as _sql
 import app.database as _database
+from sqlalchemy.sql.sqltypes import TIMESTAMP
 
 class Employees(_database.Base):
     __tablename__ = "hired_employees"
@@ -18,3 +19,9 @@ class Jobs(_database.Base):
     __tablename__ = "jobs"
     id = _sql.Column(_sql.Integer, primary_key=True, index=True, autoincrement=True, nullable=False, doc='Id of the job')
     job = _sql.Column(_sql.String, index=False, doc='Name of the job')
+
+class User(_database.Base):
+    __tablename__ = "users"
+    id = _sql.Column(_sql.Integer, primary_key=True, nullable=False)
+    email = _sql.Column(_sql.String, nullable=False, unique=True)
+    password = _sql.Column(_sql.String, nullable=False)
